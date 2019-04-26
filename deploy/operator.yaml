@@ -14,20 +14,31 @@ spec:
     spec:
       serviceAccountName: cloud-run-controller
       containers:
-        - name: cloud-run-controller
-          # Replace this with the built image name
-          image: REPLACE_IMAGE
-          command:
-          - cloud-run-controller
-          imagePullPolicy: Always
-          env:
-            - name: WATCH_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: OPERATOR_NAME
-              value: "cloud-run-controller"
+      - name: cloud-run-controller
+        # Replace this with the built image name
+        image: barpilot/cloud-run-controller
+        command:
+        - cloud-run-controller
+        imagePullPolicy: Always
+        env:
+        - name: WATCH_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: "cloud-run-controller"
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/credentials/credentials.json
+          
+        volumeMounts:
+        - name: credentials
+          mountPath: "/etc/credentials"
+          readOnly: true
+      volumes:
+      - name: credentials
+        secret:
+          secretName: credentials

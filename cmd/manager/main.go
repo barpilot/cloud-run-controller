@@ -33,6 +33,8 @@ var (
 )
 var log = logf.Log.WithName("cmd")
 
+var APIKey string
+
 func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
@@ -43,6 +45,8 @@ func main() {
 	// Add the zap logger flag set to the CLI. The flag set must
 	// be added before calling pflag.Parse().
 	pflag.CommandLine.AddFlagSet(zap.FlagSet())
+
+	pflag.CommandLine.StringVarP(&APIKey, "apikey", "a", "", "GCP api key")
 
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
@@ -65,7 +69,11 @@ func main() {
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
 		log.Error(err, "Failed to get watch namespace")
-		os.Exit(1)
+		log.Info("Failback to current namespace")
+		namespace, err = k8sutil.GetOperatorNamespace()
+		if err != nil {
+			os.Exit(1)
+		}
 	}
 
 	// Get a config to talk to the apiserver

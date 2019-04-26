@@ -1,0 +1,6 @@
+apiVersion: cloud-run-controller.barpilot.io/v1alpha1
+kind: RunServices
+metadata:
+  name: example-runservices
+spec:
+  project: myProject

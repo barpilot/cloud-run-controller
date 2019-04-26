@@ -545,7 +545,18 @@
 
 [[projects]]
   name = "google.golang.org/api"
-  packages = ["support/bundler"]
+  packages = [
+    "gensupport",
+    "googleapi",
+    "googleapi/internal/uritemplates",
+    "googleapi/transport",
+    "internal",
+    "option",
+    "run/v1alpha1",
+    "support/bundler",
+    "transport/http",
+    "transport/http/internal/propagation"
+  ]
   revision = "0cbcb99a9ea0c8023c794b2693cbe1def82ed4d7"
   version = "v0.3.2"
 
@@ -868,15 +879,26 @@
     "pkg/client",
     "pkg/client/apiutil",
     "pkg/client/config",
+    "pkg/controller",
+    "pkg/controller/controllerutil",
+    "pkg/event",
+    "pkg/handler",
+    "pkg/internal/controller",
+    "pkg/internal/controller/metrics",
     "pkg/internal/recorder",
     "pkg/leaderelection",
     "pkg/manager",
     "pkg/metrics",
     "pkg/patch",
+    "pkg/predicate",
+    "pkg/reconcile",
     "pkg/recorder",
     "pkg/runtime/inject",
     "pkg/runtime/log",
+    "pkg/runtime/scheme",
     "pkg/runtime/signals",
+    "pkg/source",
+    "pkg/source/internal",
     "pkg/webhook/admission",
     "pkg/webhook/admission/types",
     "pkg/webhook/internal/metrics",
@@ -907,6 +929,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dc14d3ed5b747dafed52094efdafd2efff37d5107585137e1783c366770d7c47"
+  inputs-digest = "118c2403739f4b824efe9231face91e60ec0413a03f43760d5fd3516ddeafece"
   solver-name = "gps-cdcl"
   solver-version = 1

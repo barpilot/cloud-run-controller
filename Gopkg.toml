@@ -72,3 +72,7 @@ required = [
   [[prune.project]]
     name = "k8s.io/gengo"
     non-go = false
+
+[[constraint]]
+  name = "google.golang.org/api"
+  version = "0.3.2"
