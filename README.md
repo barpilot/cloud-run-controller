@@ -10,6 +10,8 @@ apiVersion: cloud-run-controller.barpilot.io/v1alpha1
 kind: Service
 metadata:
   name: example-service
+  annotation:
+    removeOnDelete: "true"
 spec:
   project: myProject
   location: us-central1

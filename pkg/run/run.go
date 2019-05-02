@@ -97,3 +97,9 @@ func (rm *RunManager) CreateOrUpdate(parent string, service Service) error {
 	}
 	return nil
 }
+
+func (rm *RunManager) Delete(parent string, service Service) error {
+	name := utils.ServiceName(parent, service.Metadata.Name)
+	_, err := rm.service.Projects.Locations.Services.Delete(name).Do()
+	return err
+}
