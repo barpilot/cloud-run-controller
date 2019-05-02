@@ -44,5 +44,6 @@ rules:
   - cloud-run-controller.barpilot.io
   resources:
   - '*'
+  - services
   verbs:
   - '*'

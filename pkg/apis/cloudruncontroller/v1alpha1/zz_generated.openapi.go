@@ -16,6 +16,9 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.RunServices":       schema_pkg_apis_cloudruncontroller_v1alpha1_RunServices(ref),
 		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.RunServicesSpec":   schema_pkg_apis_cloudruncontroller_v1alpha1_RunServicesSpec(ref),
 		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.RunServicesStatus": schema_pkg_apis_cloudruncontroller_v1alpha1_RunServicesStatus(ref),
+		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.Service":           schema_pkg_apis_cloudruncontroller_v1alpha1_Service(ref),
+		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceSpec":       schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceSpec(ref),
+		"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceStatus":     schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceStatus(ref),
 	}
 }
 
@@ -67,7 +70,15 @@ func schema_pkg_apis_cloudruncontroller_v1alpha1_RunServicesSpec(ref common.Refe
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "RunServicesSpec defines the desired state of RunServices",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"project": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"project"},
 			},
 		},
 		Dependencies: []string{},
@@ -79,6 +90,82 @@ func schema_pkg_apis_cloudruncontroller_v1alpha1_RunServicesStatus(ref common.Re
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "RunServicesStatus defines the observed state of RunServices",
+				Properties:  map[string]spec.Schema{},
+			},
+		},
+		Dependencies: []string{},
+	}
+}
+
+func schema_pkg_apis_cloudruncontroller_v1alpha1_Service(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Service is the Schema for the services API",
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceSpec", "github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1.ServiceStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ServiceSpec defines the desired state of Service",
+				Properties: map[string]spec.Schema{
+					"service": {
+						SchemaProps: spec.SchemaProps{
+							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html",
+							Ref:         ref("google.golang.org/api/run/v1alpha1.Service"),
+						},
+					},
+				},
+				Required: []string{"service"},
+			},
+		},
+		Dependencies: []string{
+			"google.golang.org/api/run/v1alpha1.Service"},
+	}
+}
+
+func schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ServiceStatus defines the observed state of Service",
 				Properties:  map[string]spec.Schema{},
 			},
 		},
