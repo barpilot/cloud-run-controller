@@ -557,8 +557,8 @@
     "transport/http",
     "transport/http/internal/propagation"
   ]
-  revision = "0cbcb99a9ea0c8023c794b2693cbe1def82ed4d7"
-  version = "v0.3.2"
+  revision = "067bed655e9cbc26f4dbac8f8897b30756d90990"
+  version = "v0.4.0"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -929,6 +929,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "118c2403739f4b824efe9231face91e60ec0413a03f43760d5fd3516ddeafece"
+  inputs-digest = "8d4a39968eb2c6b6ecee43a857cfe8ccaa0bdcb7b9a362573004052337cda3e9"
   solver-name = "gps-cdcl"
   solver-version = 1

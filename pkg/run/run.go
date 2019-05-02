@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/barpilot/cloud-run-controller/pkg/utils"
 	"github.com/spf13/pflag"
 	"google.golang.org/api/option"
-	run "google.golang.org/api/run/v1alpha1"
+
+	runApi "google.golang.org/api/run/v1alpha1"
 )
 
 type RunManager struct {
 	project string
-	service *run.APIService
+	service *runApi.APIService
 }
 
 func NewRunManager(projectName string) (*RunManager, error) {
@@ -25,7 +27,7 @@ func NewRunManager(projectName string) (*RunManager, error) {
 
 	api := pflag.Lookup("apikey").Value.String()
 
-	runService, err := run.NewService(ctx, option.WithAPIKey(api))
+	runService, err := runApi.NewService(ctx, option.WithAPIKey(api))
 	if err != nil {
 		return rm, err
 	}
@@ -34,8 +36,8 @@ func NewRunManager(projectName string) (*RunManager, error) {
 	return rm, err
 }
 
-func (rm *RunManager) getAllLocations() ([]run.Location, error) {
-	locations := []run.Location{}
+func (rm *RunManager) getAllLocations() ([]runApi.Location, error) {
+	locations := []runApi.Location{}
 
 	list, err := rm.service.Projects.Locations.List(fmt.Sprintf("projects/%s", rm.project)).Do()
 
@@ -78,4 +80,20 @@ func (rm *RunManager) GetAllServices() ([]RunService, error) {
 		}
 	}
 	return runServices, nil
+}
+
+func (rm *RunManager) CreateOrUpdate(parent string, service Service) error {
+	svc := runApi.Service(service)
+	name := utils.ServiceName(parent, service.Metadata.Name)
+	_, err := rm.service.Projects.Locations.Services.Get(name).Do()
+	if err != nil {
+		if _, err := rm.service.Projects.Locations.Services.Create(parent, &svc).Do(); err != nil {
+			return err
+		}
+	} else {
+		if _, err := rm.service.Projects.Locations.Services.ReplaceService(name, &svc).Do(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
