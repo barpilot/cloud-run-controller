@@ -146,18 +146,35 @@ func schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceSpec(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Description: "ServiceSpec defines the desired state of Service",
 				Properties: map[string]spec.Schema{
-					"service": {
+					"project": {
 						SchemaProps: spec.SchemaProps{
 							Description: "INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important: Run \"operator-sdk generate k8s\" to regenerate code after modifying this file Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html",
-							Ref:         ref("google.golang.org/api/run/v1alpha1.Service"),
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"service": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/barpilot/cloud-run-controller/pkg/run.Service"),
+						},
+					},
+					"location": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"iamPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/barpilot/cloud-run-controller/pkg/run.IamPolicy"),
 						},
 					},
 				},
-				Required: []string{"service"},
+				Required: []string{"project", "service", "location"},
 			},
 		},
 		Dependencies: []string{
-			"google.golang.org/api/run/v1alpha1.Service"},
+			"github.com/barpilot/cloud-run-controller/pkg/run.IamPolicy", "github.com/barpilot/cloud-run-controller/pkg/run.Service"},
 	}
 }
 

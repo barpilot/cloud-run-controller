@@ -103,3 +103,9 @@ func (rm *RunManager) Delete(parent string, service Service) error {
 	_, err := rm.service.Projects.Locations.Services.Delete(name).Do()
 	return err
 }
+
+func (rm *RunManager) SetIamPolicy(resource string, policy IamPolicy) error {
+	p := runApi.Policy(policy)
+	_, err := rm.service.Projects.Locations.Services.SetIamPolicy(resource, &runApi.SetIamPolicyRequest{Policy: &p}).Do()
+	return err
+}
