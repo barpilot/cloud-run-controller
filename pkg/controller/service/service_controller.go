@@ -100,12 +100,18 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
+	// Be sure namespace is correctly set
+	if instance.Spec.Service.Metadata.Namespace == "" {
+		instance.Spec.Service.Metadata.Namespace = instance.Spec.Project
+	}
+
 	rm, err := run.NewRunManager(instance.Spec.Project)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
 
 	parent := utils.Parent(instance.Spec.Project, instance.Spec.Location)
+	resource := utils.ServiceName(parent, instance.Spec.Service.Metadata.Name)
 
 	if r.finalizer.IsDeletionCandidate(instance) {
 		if value, exists := instance.GetAnnotations()[annotationDeletion]; exists && value == "true" {
@@ -117,12 +123,11 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 		r.finalizer.Remove(instance)
 		return reconcile.Result{}, r.client.Update(context.TODO(), instance)
 	}
-
-	// Be sure namespace is correctly set
-	if instance.Spec.Service.Metadata.Namespace == "" {
-		instance.Spec.Service.Metadata.Namespace = instance.Spec.Project
-	}
 	r.finalizer.Add(instance)
+
+	if err := rm.SetIamPolicy(resource, instance.Spec.IamPolicy); err != nil {
+		return reconcile.Result{}, err
+	}
 
 	if err := rm.CreateOrUpdate(parent, instance.Spec.Service); err != nil {
 		return reconcile.Result{}, err

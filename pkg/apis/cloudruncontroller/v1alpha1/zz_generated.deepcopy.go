@@ -166,6 +166,7 @@ func (in *ServiceList) DeepCopyObject() runtime.Object {
 func (in *ServiceSpec) DeepCopyInto(out *ServiceSpec) {
 	*out = *in
 	in.Service.DeepCopyInto(&out.Service)
+	in.IamPolicy.DeepCopyInto(&out.IamPolicy)
 	return
 }
 

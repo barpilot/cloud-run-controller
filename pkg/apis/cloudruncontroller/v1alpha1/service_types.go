@@ -15,9 +15,10 @@ type ServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
-	Project  string      `json:"project"`
-	Service  run.Service `json:"service"`
-	Location string      `json:"location"`
+	Project   string        `json:"project"`
+	Service   run.Service   `json:"service"`
+	Location  string        `json:"location"`
+	IamPolicy run.IamPolicy `json:"iamPolicy,omitempty"`
 }
 
 // ServiceStatus defines the observed state of Service
