@@ -23,6 +23,11 @@ var log = logf.Log.WithName("controller_service")
 
 const requeueAfter = time.Minute * 5
 
+const (
+	serviceFinalizer   = "finalizer.service.cloud-run-controler.barpilot.io/v1alpha1"
+	annotationDeletion = "removeOnDelete"
+)
+
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
 * business logic.  Delete these comments after modifying this file.*
@@ -36,7 +41,11 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileService{client: mgr.GetClient(), scheme: mgr.GetScheme()}
+	return &ReconcileService{
+		client:    mgr.GetClient(),
+		scheme:    mgr.GetScheme(),
+		finalizer: utils.NewFinalizer(serviceFinalizer),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -61,8 +70,9 @@ var _ reconcile.Reconciler = &ReconcileService{}
 type ReconcileService struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
+	client    client.Client
+	scheme    *runtime.Scheme
+	finalizer *utils.Finalizer
 }
 
 // Reconcile reads that state of the cluster for a Service object and makes changes based on the state read
@@ -95,13 +105,29 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 		return reconcile.Result{}, err
 	}
 
-	// Be sur namespace is correctly set
-	instance.Spec.Service.Metadata.Namespace = instance.Spec.Project
+	parent := utils.Parent(instance.Spec.Project, instance.Spec.Location)
 
-	if err := rm.CreateOrUpdate(utils.Parent(instance.Spec.Project, instance.Spec.Location), instance.Spec.Service); err != nil {
+	if r.finalizer.IsDeletionCandidate(instance) {
+		if value, exists := instance.GetAnnotations()[annotationDeletion]; exists && value == "true" {
+			log.Info("Delete Cloud Run Service", "service", instance.Spec.Service)
+			if err := rm.Delete(parent, instance.Spec.Service); err != nil {
+				return reconcile.Result{}, err
+			}
+		}
+		r.finalizer.Remove(instance)
+		return reconcile.Result{}, r.client.Update(context.TODO(), instance)
+	}
+
+	// Be sure namespace is correctly set
+	if instance.Spec.Service.Metadata.Namespace == "" {
+		instance.Spec.Service.Metadata.Namespace = instance.Spec.Project
+	}
+	r.finalizer.Add(instance)
+
+	if err := rm.CreateOrUpdate(parent, instance.Spec.Service); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	reqLogger.Info("Nothing to do", "requeue", requeueAfter)
+	reqLogger.Info("End of work", "requeue", requeueAfter)
 	return reconcile.Result{RequeueAfter: requeueAfter}, nil
 }
