@@ -183,7 +183,14 @@ func schema_pkg_apis_cloudruncontroller_v1alpha1_ServiceStatus(ref common.Refere
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "ServiceStatus defines the observed state of Service",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
 			},
 		},
 		Dependencies: []string{},

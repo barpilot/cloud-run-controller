@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	cloudruncontrollerv1alpha1 "github.com/barpilot/cloud-run-controller/pkg/apis/cloudruncontroller/v1alpha1"
@@ -87,8 +88,8 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 	reqLogger.Info("Reconciling Service")
 
 	// Fetch the Service instance
-	instance := &cloudruncontrollerv1alpha1.Service{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	currentInstance := &cloudruncontrollerv1alpha1.Service{}
+	err := r.client.Get(context.TODO(), request.NamespacedName, currentInstance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -99,6 +100,8 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+
+	instance := currentInstance.DeepCopy()
 
 	// Be sure namespace is correctly set
 	if instance.Spec.Service.Metadata.Namespace == "" {
@@ -116,7 +119,7 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 	if r.finalizer.IsDeletionCandidate(instance) {
 		if value, exists := instance.GetAnnotations()[annotationDeletion]; exists && value == "true" {
 			log.Info("Delete Cloud Run Service", "service", instance.Spec.Service)
-			if err := rm.Delete(parent, instance.Spec.Service); err != nil {
+			if err := rm.Delete(resource, instance.Spec.Service); err != nil {
 				return reconcile.Result{}, err
 			}
 		}
@@ -125,12 +128,22 @@ func (r *ReconcileService) Reconcile(request reconcile.Request) (reconcile.Resul
 	}
 	r.finalizer.Add(instance)
 
-	if err := rm.SetIamPolicy(resource, instance.Spec.IamPolicy); err != nil {
+	if err := rm.SetIamPolicy(resource, &instance.Spec.IamPolicy); err != nil {
 		return reconcile.Result{}, err
 	}
 
-	if err := rm.CreateOrUpdate(parent, instance.Spec.Service); err != nil {
+	if createdService, err := rm.CreateOrUpdate(parent, &instance.Spec.Service); err != nil {
 		return reconcile.Result{}, err
+	} else {
+		instance.Status.Url = createdService.Status.Address.Hostname
+	}
+
+	// Update Status
+	if !reflect.DeepEqual(currentInstance.Status, instance.Status) {
+		if err := r.client.Status().Update(context.TODO(), instance); err != nil {
+			reqLogger.Error(err, "Failed to update instance status")
+			return reconcile.Result{}, err
+		}
 	}
 
 	reqLogger.Info("End of work", "requeue", requeueAfter)

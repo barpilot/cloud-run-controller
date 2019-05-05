@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"unsafe"
 
 	"github.com/barpilot/cloud-run-controller/pkg/utils"
 	"github.com/spf13/pflag"
@@ -82,30 +83,26 @@ func (rm *RunManager) GetAllServices() ([]RunService, error) {
 	return runServices, nil
 }
 
-func (rm *RunManager) CreateOrUpdate(parent string, service Service) error {
-	svc := runApi.Service(service)
+func (rm *RunManager) CreateOrUpdate(parent string, service *Service) (*Service, error) {
+	runApiSvc := (*runApi.Service)(unsafe.Pointer(service))
 	name := utils.ServiceName(parent, service.Metadata.Name)
-	_, err := rm.service.Projects.Locations.Services.Get(name).Do()
+	result, err := rm.service.Projects.Locations.Services.Get(name).Do()
 	if err != nil {
-		if _, err := rm.service.Projects.Locations.Services.Create(parent, &svc).Do(); err != nil {
-			return err
-		}
+		result, err = rm.service.Projects.Locations.Services.Create(parent, runApiSvc).Do()
 	} else {
-		if _, err := rm.service.Projects.Locations.Services.ReplaceService(name, &svc).Do(); err != nil {
-			return err
-		}
+		result, err = rm.service.Projects.Locations.Services.ReplaceService(name, runApiSvc).Do()
 	}
-	return nil
+
+	return (*Service)(unsafe.Pointer(result)), err
 }
 
-func (rm *RunManager) Delete(parent string, service Service) error {
-	name := utils.ServiceName(parent, service.Metadata.Name)
-	_, err := rm.service.Projects.Locations.Services.Delete(name).Do()
+func (rm *RunManager) Delete(resource string, service Service) error {
+	_, err := rm.service.Projects.Locations.Services.Delete(resource).Do()
 	return err
 }
 
-func (rm *RunManager) SetIamPolicy(resource string, policy IamPolicy) error {
-	p := runApi.Policy(policy)
-	_, err := rm.service.Projects.Locations.Services.SetIamPolicy(resource, &runApi.SetIamPolicyRequest{Policy: &p}).Do()
+func (rm *RunManager) SetIamPolicy(resource string, policy *IamPolicy) error {
+	p := (*runApi.Policy)(unsafe.Pointer(policy))
+	_, err := rm.service.Projects.Locations.Services.SetIamPolicy(resource, &runApi.SetIamPolicyRequest{Policy: p}).Do()
 	return err
 }
